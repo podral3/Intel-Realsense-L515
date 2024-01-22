@@ -1,5 +1,7 @@
 ﻿using System.Drawing;
+using System.Runtime.CompilerServices;
 using Intel.RealSense;
+using System.Linq;
 
 
 namespace L515_Realsense_App
@@ -8,6 +10,7 @@ namespace L515_Realsense_App
     {
         private const double MINRANGE = 0.1;
         private const double MAXRANGE = 10;
+        private float _depth_scale;
 
         private int _width;
         private int _height;
@@ -46,9 +49,10 @@ namespace L515_Realsense_App
         {
             _pipe = new Pipeline();
             _config = new Config();
-            _config.EnableStream(Intel.RealSense.Stream.Any, _width, _height, Intel.RealSense.Format.Y16, _framerate);
+            _config.EnableStream(Intel.RealSense.Stream.Any, _width, _height, Intel.RealSense.Format.Z16, _framerate);
 
             _profile = _pipe.Start(_config);
+            _depth_scale =  _profile.Device.Sensors.First().DepthScale;
 
             Console.WriteLine($"{_profile.Device.Info.GetInfo(CameraInfo.Name)}");
             _isConnectionOpen = true;
@@ -77,13 +81,6 @@ namespace L515_Realsense_App
 
         }
 
-        //TODO
-        public void InitializeDeprojectionMatrix()
-        {
-            this.GetIntrinistics();
-
-            //Create deproject row/column vector
-        }
 
         public void GetFrame() //musi robic return
         {
@@ -96,20 +93,13 @@ namespace L515_Realsense_App
             {
                 Console.WriteLine("depth frame aquired");
                 ushort[,] frame2dBytes = ReadDepthFrame(depth_frame);
-                //CreateBitmap(frame2dBytes);
+                float[,] depth_map = CreateDepthMap(frame2dBytes);
+                CreateDepthImage(depth_map);
             }
             if (color_frame != null)
             {
                 Console.WriteLine("Color frame aquired");
                 byte[,] colorFrame2dBytes = ReadColorFrame(color_frame);
-                //for(int i = 0; i < colorFrame2dBytes.GetLength(0); i++)
-                //{
-                //    for(int j = 0; j < colorFrame2dBytes.GetLength(1); j++)
-                //    {
-                        
-                //    }
-                //}
-                CreateImageBitmap(colorFrame2dBytes);
             }
 
         }
@@ -131,6 +121,14 @@ namespace L515_Realsense_App
             //return new Bitmap();
         }
 
+        private void CreateDepthImage(float[,] depth_map)
+        {
+            float max = depth_map.Cast<float>().Max();
+            float min = depth_map.Cast<float>().Min();
+            Console.WriteLine($"Min {min} Max {max}");
+        }
+        
+        //need to reverse order of bytes for each pixel
         private ushort[,] ReadDepthFrame(DepthFrame depth_frame)
         {
             ushort[,] frame2dBytes = new ushort[depth_frame.Width, depth_frame.Height];
@@ -143,14 +141,27 @@ namespace L515_Realsense_App
                 {
                     for (int j = 0; j < depth_frame.Height; j++)
                     {
-                        frame2dBytes[i, j] = depth_data[counter];
+                        frame2dBytes[i, j] = ReverseBytes(depth_data[counter]);
                         counter++;
                     }
                 }
             }
             return frame2dBytes;
         }
-
+        //bytes are in little endian (reverse order)
+        private float[,] CreateDepthMap(ushort[,] depth_frame)
+        {
+            float[,] depth_map = new float[depth_frame.GetLength(0), depth_frame.GetLength(1)];
+            for(int i = 0; i < depth_frame.GetLength(0); i++)
+            {
+                for(int j = 0; j < depth_frame.GetLength(1); j++)
+                {
+                    depth_map[i,j] = depth_frame[i,j] * (float)_depth_scale; 
+                }
+            }
+            return depth_map;
+        }
+        
         private byte[,] ReadColorFrame(VideoFrame video_frame)
         {
             byte[,] frame2dBytes = new byte[video_frame.Width, video_frame.Height];
@@ -171,5 +182,10 @@ namespace L515_Realsense_App
             return frame2dBytes;
         }
 
+        private ushort ReverseBytes(ushort numberToReverse)
+        {
+            byte[] bytes = BitConverter.GetBytes(numberToReverse);
+            return BitConverter.ToUInt16(bytes.Reverse().ToArray(), 0);
+        }
     }
 }
