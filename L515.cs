@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using System.Runtime.CompilerServices;
 using Intel.RealSense;
 using System.Linq;
 
@@ -33,7 +32,7 @@ namespace L515_Realsense_App
         //deprojection
 
 
-
+        
         public L515(int width = 640, int heigth = 480, int framerate = 30)
         {
             _width = width;
@@ -44,12 +43,15 @@ namespace L515_Realsense_App
 
             _fov = new float[2] { 0, 0 };
         }
-
+        //possible formats:
+        //Depth: Z16, Y8, RAW8
+        //RGB Camera: YUYV, BRG8, RGBA8, BGRA8, Y8, Y16
         public void OpenConnection()
         {
             _pipe = new Pipeline();
             _config = new Config();
-            _config.EnableStream(Intel.RealSense.Stream.Any, _width, _height, Intel.RealSense.Format.Z16, _framerate);
+            
+            _config.EnableStream(Intel.RealSense.Stream.Depth, _width, _height, Intel.RealSense.Format.Z16, _framerate);
 
             _profile = _pipe.Start(_config);
             _depth_scale =  _profile.Device.Sensors.First().DepthScale;
@@ -82,26 +84,56 @@ namespace L515_Realsense_App
         }
 
 
-        public void GetFrame() //musi robic return
+        public void GetDepthFrame() //musi robic return
         {
             FrameSet frames = _pipe.WaitForFrames();
 
             DepthFrame depth_frame = frames.DepthFrame;
-            VideoFrame color_frame = frames.ColorFrame;
+            
 
             if (depth_frame != null)
             {
                 Console.WriteLine("depth frame aquired");
                 ushort[,] frame2dBytes = ReadDepthFrame(depth_frame);
                 float[,] depth_map = CreateDepthMap(frame2dBytes);
-                CreateDepthImage(depth_map);
             }
-            if (color_frame != null)
-            {
-                Console.WriteLine("Color frame aquired");
-                byte[,] colorFrame2dBytes = ReadColorFrame(color_frame);
-            }
+        }
 
+        public void StreamFrames()
+        {
+            if(_pipe != null)
+            {
+                while (true)
+                {
+                    if (_pipe.PollForFrames(out FrameSet frameSet))
+                    {
+                        using (frameSet)
+                        {
+                            DepthFrame frame = frameSet.DepthFrame;
+                            ushort[,] frame2dBytes = ReadDepthFrame(frame);
+                            float[,] depth_map = CreateDepthMap(frame2dBytes);
+                            WriteMaxDepthInfo(depth_map);
+
+                        }
+                    } 
+                }
+    
+            }
+        }
+
+        public void GetVideoFrame()
+        {
+            throw new NotImplementedException();
+
+            FrameSet frames = _pipe.WaitForFrames();
+
+            VideoFrame video_frame = frames.ColorFrame;
+
+            if (video_frame != null)
+            {
+                Console.WriteLine("Video frame aquired");
+                byte[,] colorFrame2dBytes = ReadColorFrame(video_frame);
+            }
         }
 
         private void CreateImageBitmap(byte[,] pixels)
@@ -121,7 +153,7 @@ namespace L515_Realsense_App
             //return new Bitmap();
         }
 
-        private void CreateDepthImage(float[,] depth_map)
+        private void WriteMaxDepthInfo(float[,] depth_map)
         {
             float max = depth_map.Cast<float>().Max();
             float min = depth_map.Cast<float>().Min();
@@ -181,11 +213,15 @@ namespace L515_Realsense_App
             }
             return frame2dBytes;
         }
-
+        //huh raz trzeba odwrócić raz nie, do zbadania
         private ushort ReverseBytes(ushort numberToReverse)
         {
-            byte[] bytes = BitConverter.GetBytes(numberToReverse);
-            return BitConverter.ToUInt16(bytes.Reverse().ToArray(), 0);
+            if (!BitConverter.IsLittleEndian)
+            {
+                byte[] bytes = BitConverter.GetBytes(numberToReverse);
+                return BitConverter.ToUInt16(bytes.Reverse().ToArray(), 0); 
+            }
+            return numberToReverse;
         }
     }
 }
