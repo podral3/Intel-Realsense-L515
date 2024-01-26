@@ -9,7 +9,7 @@ namespace L515_Realsense_App
 
             L515 device = new L515();
             device.OpenConnection();
-            device.GetFrame();
+            device.StreamFrames();
             return 0;
         }
     }
