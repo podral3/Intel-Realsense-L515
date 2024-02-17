@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using Intel.RealSense;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 
 namespace L515_Realsense_App
@@ -59,7 +60,7 @@ namespace L515_Realsense_App
             switch (streamType)
             {
                 case streamType.color:
-                    _config.EnableStream(Intel.RealSense.Stream.Color, _width, _height, Intel.RealSense.Format.Rgb8, _framerate);
+                    _config.EnableStream(Intel.RealSense.Stream.Color, _width, _height, Intel.RealSense.Format.Rgba8, _framerate);
                     break; 
                 case streamType.depth:
                     _config.EnableStream(Intel.RealSense.Stream.Depth, _width, _height, Intel.RealSense.Format.Z16, _framerate);
@@ -136,6 +137,25 @@ namespace L515_Realsense_App
     
             }
         }
+        public void StreamVideoFrames()
+        {
+            if (_pipe != null)
+            {
+                while (true)
+                {
+                    if (_pipe.PollForFrames(out FrameSet frameSet))
+                    {
+                        using (frameSet)
+                        {
+                            VideoFrame frame = frameSet.ColorFrame;
+                            ReadColorFrame(frame);
+
+                        }
+                    }
+                }
+
+            }
+        }
 
         public void GetVideoFrame()
         {
@@ -145,8 +165,9 @@ namespace L515_Realsense_App
 
             if (video_frame != null)
             {
+                
+                int[,] colorFrame2dBytes = ReadColorFrame(video_frame);
                 Console.WriteLine("Video frame aquired");
-                byte[,] colorFrame2dBytes = ReadColorFrame(video_frame);
             }
         }
 
@@ -208,23 +229,27 @@ namespace L515_Realsense_App
             return depth_map;
         }
         
-        private byte[,] ReadColorFrame(VideoFrame video_frame)
+        private int[,] ReadColorFrame(VideoFrame video_frame)
         {
-            byte[,] frame2dBytes = new byte[video_frame.Width, video_frame.Height];
+            int[,] frame2dBytes = new int[video_frame.Width, video_frame.Height];
+            Bitmap bitmap = new Bitmap(video_frame.Width, video_frame.Height);
             int counter = 0;
             unsafe
             {
-                byte* depth_data = (byte*)video_frame.Data.ToPointer();
-
+                int* video_data = (int*)video_frame.Data.ToPointer();
                 for (int i = 0; i < video_frame.Width; i++)
                 {
                     for (int j = 0; j < video_frame.Height; j++)
                     {
-                        frame2dBytes[i, j] = depth_data[counter];
+                        frame2dBytes[i, j] = ReverseBytes(video_data[counter]);
+                        byte[] bytes = BitConverter.GetBytes(ReverseBytes(video_data[counter]));
+                        Color pixelColor = Color.FromArgb(bytes[0], bytes[1], bytes[2], bytes[3]);
+                        bitmap.SetPixel(i, j, pixelColor);
                         counter++;
                     }
                 }
             }
+            bitmap.Save("bruh.jpg");
             return frame2dBytes;
         }
         //huh raz trzeba odwrócić raz nie, do zbadania
@@ -234,6 +259,15 @@ namespace L515_Realsense_App
             {
                 byte[] bytes = BitConverter.GetBytes(numberToReverse);
                 return BitConverter.ToUInt16(bytes.Reverse().ToArray(), 0); 
+            }
+            return numberToReverse;
+        }
+        private int ReverseBytes(int numberToReverse)
+        {
+            if (BitConverter.IsLittleEndian)
+            {
+                byte[] bytes = BitConverter.GetBytes(numberToReverse);
+                return BitConverter.ToUInt16(bytes.Reverse().ToArray(), 0);
             }
             return numberToReverse;
         }
