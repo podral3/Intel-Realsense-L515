@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "s8LT0fewBtdp74+xuf51qnsh2vFulHNfcL6TqFr0n7cCzos7FmorI2QF3SdocU9rcReWQ7iXuFLqUMDvIuwfxg==",
+  "dgSpecHash": "fKGZ73g1d9+EB1MWxzzuCxtuE20h1KOiR9gofB43iGIK8Lc3Y9ylpm2okm9IDJXZSyTVHNO8s5CRIurmbyq3BA==",
   "success": true,
-  "projectFilePath": "F:\\CSRepos\\L515 Realsense App\\L515 Realsense App.csproj",
+  "projectFilePath": "D:\\Repos\\L515\\L515 Realsense App.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Podral3\\.nuget\\packages\\intel.realsensewithnativedll\\2.51.1.1\\intel.realsensewithnativedll.2.51.1.1.nupkg.sha512",
     "C:\\Users\\Podral3\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0\\microsoft.win32.systemevents.8.0.0.nupkg.sha512",

@@ -5,6 +5,12 @@ using System.Linq;
 
 namespace L515_Realsense_App
 {
+    public enum streamType
+    {
+        color,
+        depth,
+        motion
+    }
     public class L515
     {
         private const double MINRANGE = 0.1;
@@ -46,12 +52,22 @@ namespace L515_Realsense_App
         //possible formats:
         //Depth: Z16, Y8, RAW8
         //RGB Camera: YUYV, BRG8, RGBA8, BGRA8, Y8, Y16
-        public void OpenConnection()
+        public void OpenConnection(streamType streamType)
         {
             _pipe = new Pipeline();
             _config = new Config();
-            
-            _config.EnableStream(Intel.RealSense.Stream.Depth, _width, _height, Intel.RealSense.Format.Z16, _framerate);
+            switch (streamType)
+            {
+                case streamType.color:
+                    _config.EnableStream(Intel.RealSense.Stream.Color, _width, _height, Intel.RealSense.Format.Rgb8, _framerate);
+                    break; 
+                case streamType.depth:
+                    _config.EnableStream(Intel.RealSense.Stream.Depth, _width, _height, Intel.RealSense.Format.Z16, _framerate);
+                    break;
+                case streamType.motion:
+                    break;
+            } 
+           
 
             _profile = _pipe.Start(_config);
             _depth_scale =  _profile.Device.Sensors.First().DepthScale;
@@ -123,8 +139,6 @@ namespace L515_Realsense_App
 
         public void GetVideoFrame()
         {
-            throw new NotImplementedException();
-
             FrameSet frames = _pipe.WaitForFrames();
 
             VideoFrame video_frame = frames.ColorFrame;

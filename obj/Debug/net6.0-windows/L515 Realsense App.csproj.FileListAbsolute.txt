@@ -19,3 +19,24 @@ F:\CSRepos\L515 Realsense App\obj\Debug\net6.0-windows\refint\L515 Realsense App
 F:\CSRepos\L515 Realsense App\obj\Debug\net6.0-windows\L515 Realsense App.pdb
 F:\CSRepos\L515 Realsense App\obj\Debug\net6.0-windows\L515 Realsense App.genruntimeconfig.cache
 F:\CSRepos\L515 Realsense App\obj\Debug\net6.0-windows\ref\L515 Realsense App.dll
+D:\Repos\L515\obj\Debug\net6.0-windows\L515 Realsense App.csproj.AssemblyReference.cache
+D:\Repos\L515\obj\Debug\net6.0-windows\L515 Realsense App.GeneratedMSBuildEditorConfig.editorconfig
+D:\Repos\L515\obj\Debug\net6.0-windows\L515 Realsense App.AssemblyInfoInputs.cache
+D:\Repos\L515\obj\Debug\net6.0-windows\L515 Realsense App.AssemblyInfo.cs
+D:\Repos\L515\obj\Debug\net6.0-windows\L515 Realsense App.csproj.CoreCompileInputs.cache
+D:\Repos\L515\obj\Debug\net6.0-windows\L515 Realsense App.dll
+D:\Repos\L515\obj\Debug\net6.0-windows\refint\L515 Realsense App.dll
+D:\Repos\L515\obj\Debug\net6.0-windows\L515 Realsense App.pdb
+D:\Repos\L515\bin\Debug\net6.0-windows\realsense2.dll
+D:\Repos\L515\bin\Debug\net6.0-windows\L515 Realsense App.exe
+D:\Repos\L515\bin\Debug\net6.0-windows\L515 Realsense App.deps.json
+D:\Repos\L515\bin\Debug\net6.0-windows\L515 Realsense App.runtimeconfig.json
+D:\Repos\L515\bin\Debug\net6.0-windows\L515 Realsense App.dll
+D:\Repos\L515\bin\Debug\net6.0-windows\L515 Realsense App.pdb
+D:\Repos\L515\bin\Debug\net6.0-windows\Intel.RealSense.dll
+D:\Repos\L515\bin\Debug\net6.0-windows\Microsoft.Win32.SystemEvents.dll
+D:\Repos\L515\bin\Debug\net6.0-windows\System.Drawing.Common.dll
+D:\Repos\L515\bin\Debug\net6.0-windows\runtimes\win\lib\net6.0\Microsoft.Win32.SystemEvents.dll
+D:\Repos\L515\obj\Debug\net6.0-windows\L515 Realsense App.csproj.CopyComplete
+D:\Repos\L515\obj\Debug\net6.0-windows\L515 Realsense App.genruntimeconfig.cache
+D:\Repos\L515\obj\Debug\net6.0-windows\ref\L515 Realsense App.dll

@@ -160,11 +160,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "F:\\CSRepos\\L515 Realsense App\\L515 Realsense App.csproj",
+      "projectUniqueName": "D:\\Repos\\L515\\L515 Realsense App.csproj",
       "projectName": "L515 Realsense App",
-      "projectPath": "F:\\CSRepos\\L515 Realsense App\\L515 Realsense App.csproj",
+      "projectPath": "D:\\Repos\\L515\\L515 Realsense App.csproj",
       "packagesPath": "C:\\Users\\Podral3\\.nuget\\packages\\",
-      "outputPath": "F:\\CSRepos\\L515 Realsense App\\obj\\",
+      "outputPath": "D:\\Repos\\L515\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Podral3\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -218,7 +218,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.401\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
       }
     }
   }
