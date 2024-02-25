@@ -244,7 +244,7 @@ namespace L515_Realsense_App
                     {
                         frame2dBytes[i, j] = ReverseBytes(video_data[counter]);
                         byte[] bytes = BitConverter.GetBytes(ReverseBytes(video_data[counter]));
-                        Color pixelColor = Color.FromArgb(bytes[0], bytes[2], bytes[1], bytes[3]);
+                        Color pixelColor = Color.FromArgb(bytes[3], bytes[2], bytes[1], bytes[0]);
                         bitmap.SetPixel(i, j, pixelColor);
                         counter++;
                     }
@@ -263,12 +263,14 @@ namespace L515_Realsense_App
             }
             return numberToReverse;
         }
+        //NIE ODWRACA POPRAWNIE, COŚ Z CASTOWANIEM
         private int ReverseBytes(int numberToReverse)
         {
-            if (BitConverter.IsLittleEndian)
+            if (!BitConverter.IsLittleEndian)
             {
                 byte[] bytes = BitConverter.GetBytes(numberToReverse);
-                return BitConverter.ToUInt16(bytes.Reverse().ToArray(), 0);
+                byte[] reversed = bytes.Reverse().ToArray();
+                return BitConverter.ToUInt16(reversed, 0);
             }
             return numberToReverse;
         }
