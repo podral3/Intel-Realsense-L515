@@ -234,6 +234,7 @@ namespace L515_Realsense_App
             int[,] frame2dBytes = new int[video_frame.Width, video_frame.Height];
             Bitmap bitmap = new Bitmap(video_frame.Width, video_frame.Height);
             int counter = 0;
+            int stride = video_frame.Stride;
             unsafe
             {
                 int* video_data = (int*)video_frame.Data.ToPointer();
@@ -243,13 +244,13 @@ namespace L515_Realsense_App
                     {
                         frame2dBytes[i, j] = ReverseBytes(video_data[counter]);
                         byte[] bytes = BitConverter.GetBytes(ReverseBytes(video_data[counter]));
-                        Color pixelColor = Color.FromArgb(bytes[0], bytes[1], bytes[2], bytes[3]);
+                        Color pixelColor = Color.FromArgb(bytes[0], bytes[2], bytes[1], bytes[3]);
                         bitmap.SetPixel(i, j, pixelColor);
                         counter++;
                     }
                 }
             }
-            bitmap.Save("bruh.jpg");
+            bitmap.Save("bruh.png");
             return frame2dBytes;
         }
         //huh raz trzeba odwrócić raz nie, do zbadania
