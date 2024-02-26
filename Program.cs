@@ -8,8 +8,8 @@ namespace L515_Realsense_App
         {
 
             L515 device = new L515();
-            device.OpenConnection();
-            device.StreamFrames();
+            device.OpenConnection(streamType.color);
+            device.StreamVideoFrames();
             return 0;
         }
     }
