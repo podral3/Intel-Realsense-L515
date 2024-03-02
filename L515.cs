@@ -15,7 +15,7 @@ namespace L515_Realsense_App
     public class L515
     {
         private const double MINRANGE = 0.1;
-        private const double MAXRANGE = 10;
+        private const double MAXRANGE = 15;
         private float _depth_scale;
 
         private int _width;
@@ -40,7 +40,7 @@ namespace L515_Realsense_App
 
 
         
-        public L515(int width = 640, int heigth = 480, int framerate = 30)
+        public L515(int width = 1024, int heigth = 768, int framerate = 30)
         {
             _width = width;
             _height = heigth;
@@ -113,6 +113,9 @@ namespace L515_Realsense_App
                 Console.WriteLine("depth frame aquired");
                 ushort[,] frame2dBytes = ReadDepthFrame(depth_frame);
                 float[,] depth_map = CreateDepthMap(frame2dBytes);
+                float[,] normalizedDepthMap = NormalizeDepthMap(depth_map);
+                PrintDepthMapMonochrome(normalizedDepthMap);
+                Console.WriteLine("heh");
             }
         }
 
@@ -170,24 +173,6 @@ namespace L515_Realsense_App
                 Console.WriteLine("Video frame aquired");
             }
         }
-
-        private void CreateImageBitmap(byte[,] pixels)
-        {
-            Bitmap bitmap = new Bitmap(_width, _height, System.Drawing.Imaging.PixelFormat.Format16bppRgb555);
-            for(int i = 0; i < _width; i++)
-            {
-                for(int j = 0; j < _height; j++)
-                {
-                    Color color = Color.FromArgb(pixels[i, j], 0,0);
-                    bitmap.SetPixel(i, j, color);
-                    
-                }
-            }
-            bitmap.Save("bitmapTest.jpeg");
-            Console.WriteLine("Image Saved");
-            //return new Bitmap();
-        }
-
         private void WriteMaxDepthInfo(float[,] depth_map)
         {
             float max = depth_map.Cast<float>().Max();
@@ -204,11 +189,11 @@ namespace L515_Realsense_App
             {
                 ushort* depth_data = (ushort*)depth_frame.Data.ToPointer();
 
-                for (int i = 0; i < depth_frame.Width; i++)
+                for (int i = 0; i < depth_frame.Height; i++)
                 {
-                    for (int j = 0; j < depth_frame.Height; j++)
+                    for (int j = 0; j < depth_frame.Width; j++)
                     {
-                        frame2dBytes[i, j] = ReverseBytes(depth_data[counter]);
+                        frame2dBytes[j, i] = ReverseBytes(depth_data[counter]);
                         counter++;
                     }
                 }
@@ -228,6 +213,37 @@ namespace L515_Realsense_App
             }
             return depth_map;
         }
+
+        private float[,] NormalizeDepthMap(float[,] depth_map)
+        {
+            float[,] normalized = new float[depth_map.GetLength(0), depth_map.GetLength(1)];
+            float max = depth_map.Cast<float>().Max();
+            float min = depth_map.Cast<float>().Min();
+            for (int i = 0; i < depth_map.GetLength(0); i++)
+            {
+                for (int j = 0; j < depth_map.GetLength(1); j++)
+                {
+                    float value = (depth_map[i, j] - min) / (max - min);
+                    normalized[i, j] = value;
+                }
+            }
+            return normalized;
+        }
+
+        private void PrintDepthMapMonochrome(float[,] normalizedDepthMap)
+        {
+            Bitmap bitmap = new Bitmap(normalizedDepthMap.GetLength(0), normalizedDepthMap.GetLength(1));
+            for (int i = 0; i < normalizedDepthMap.GetLength(0); i++)
+            {
+                for (int j = 0; j < normalizedDepthMap.GetLength(1); j++)
+                {
+                    int colorVal = (int)(normalizedDepthMap[i, j] * 255.0f);
+                    Color pixelColor = Color.FromArgb(255, colorVal, colorVal, colorVal);
+                    bitmap.SetPixel(i, j, pixelColor);
+                }
+            }
+            bitmap.Save("Bitmap.png");
+        }
         
         private int[,] ReadColorFrame(VideoFrame video_frame)
         {
@@ -238,14 +254,15 @@ namespace L515_Realsense_App
             unsafe
             {
                 int* video_data = (int*)video_frame.Data.ToPointer();
-                for (int i = 0; i < video_frame.Width; i++)
+                //najpierw wczytać wiersz potem kolumne
+                for (int i = 0; i < video_frame.Height; i++) //kolumna 0
                 {
-                    for (int j = 0; j < video_frame.Height; j++)
+                    for (int j = 0; j < video_frame.Width; j++) //wiersz 0
                     {
-                        frame2dBytes[i, j] = ReverseBytes(video_data[counter]);
+                        frame2dBytes[j, i] = ReverseBytes(video_data[counter]);
                         byte[] bytes = BitConverter.GetBytes(ReverseBytes(video_data[counter]));
-                        Color pixelColor = Color.FromArgb(bytes[3], bytes[2], bytes[1], bytes[0]);
-                        bitmap.SetPixel(i, j, pixelColor);
+                        Color pixelColor = Color.FromArgb(bytes[3], bytes[0], bytes[1], bytes[2]);
+                        bitmap.SetPixel(j, i, pixelColor);
                         counter++;
                     }
                 }
