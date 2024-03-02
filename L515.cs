@@ -66,10 +66,11 @@ namespace L515_Realsense_App
                     _config.EnableStream(Intel.RealSense.Stream.Depth, _width, _height, Intel.RealSense.Format.Z16, _framerate);
                     break;
                 case streamType.motion:
+                    _config.EnableStream(Intel.RealSense.Stream.Pose, _width, _height, Intel.RealSense.Format.MotionXyz32f, _framerate);
                     break;
-            } 
-           
+            }
 
+            _config.EnableAllStreams();
             _profile = _pipe.Start(_config);
             _depth_scale =  _profile.Device.Sensors.First().DepthScale;
 
@@ -160,19 +161,6 @@ namespace L515_Realsense_App
             }
         }
 
-        public void GetVideoFrame()
-        {
-            FrameSet frames = _pipe.WaitForFrames();
-
-            VideoFrame video_frame = frames.ColorFrame;
-
-            if (video_frame != null)
-            {
-                
-                int[,] colorFrame2dBytes = ReadColorFrame(video_frame);
-                Console.WriteLine("Video frame aquired");
-            }
-        }
         private void WriteMaxDepthInfo(float[,] depth_map)
         {
             float max = depth_map.Cast<float>().Max();
@@ -269,6 +257,36 @@ namespace L515_Realsense_App
             }
             bitmap.Save("bruh.png");
             return frame2dBytes;
+        }
+
+        public void ReadIMUFrame()
+        {
+            while (true)
+            {
+                using (var frameset = this._pipe.WaitForFrames())
+                {
+                    var gyroFrame = frameset.FirstOrDefault<Frame>(Intel.RealSense.Stream.Gyro, Format.MotionXyz32f).DisposeWith(frameset);
+                    IMUVector3D gyroCoordinates = ReadSensorBytes(gyroFrame.Data);
+                    //Console.WriteLine($"X:{gyroCoordinates.X} Y:{gyroCoordinates.Y} Z:{gyroCoordinates.Z}");
+                    var accelFrame = frameset.FirstOrDefault<Frame>(Intel.RealSense.Stream.Accel, Format.MotionXyz32f).DisposeWith(frameset);
+                    IMUVector3D accelCoordinates = ReadSensorBytes(accelFrame.Data);
+                    Console.WriteLine($"X:{accelCoordinates.X} Y:{accelCoordinates.Y} Z:{accelCoordinates.Z}");
+                }
+            }
+        }
+
+        private IMUVector3D ReadSensorBytes(IntPtr data)
+        {
+            IMUVector3D coords = new IMUVector3D();
+            unsafe
+            {
+                float* floatPtr = (float*)data; 
+
+                coords.X = *floatPtr;
+                coords.Y= *(floatPtr +1);
+                coords.Z = *(floatPtr +2);
+            }
+            return new IMUVector3D(coords);
         }
         //huh raz trzeba odwrócić raz nie, do zbadania
         private ushort ReverseBytes(ushort numberToReverse)
