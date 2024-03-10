@@ -2,7 +2,7 @@
 using Intel.RealSense;
 using System.Linq;
 using System.Runtime.InteropServices;
-
+using System.Numerics;
 
 namespace L515_Realsense_App
 {
@@ -27,6 +27,10 @@ namespace L515_Realsense_App
         private float _scale;
 
         private float[] _fov;
+
+        private Vector3 _gyro;
+        private Vector3 _acc;
+        private Vector3 _cameraPosition;
 
 
         //realsense variables
@@ -266,18 +270,41 @@ namespace L515_Realsense_App
                 using (var frameset = this._pipe.WaitForFrames())
                 {
                     var gyroFrame = frameset.FirstOrDefault<Frame>(Intel.RealSense.Stream.Gyro, Format.MotionXyz32f).DisposeWith(frameset);
-                    IMUVector3D gyroCoordinates = ReadSensorBytes(gyroFrame.Data);
-                    //Console.WriteLine($"X:{gyroCoordinates.X} Y:{gyroCoordinates.Y} Z:{gyroCoordinates.Z}");
+                    Vector3 gyroCoordinates = ReadSensorBytes(gyroFrame.Data);
+                    this._gyro = new Vector3(gyroCoordinates.X, gyroCoordinates.Y, gyroCoordinates.Z);
+
                     var accelFrame = frameset.FirstOrDefault<Frame>(Intel.RealSense.Stream.Accel, Format.MotionXyz32f).DisposeWith(frameset);
-                    IMUVector3D accelCoordinates = ReadSensorBytes(accelFrame.Data);
-                    Console.WriteLine($"X:{accelCoordinates.X} Y:{accelCoordinates.Y} Z:{accelCoordinates.Z}");
+                    Vector3 accelCoordinates = ReadSensorBytes(accelFrame.Data);
+                    this._acc = new Vector3(accelCoordinates.X, accelCoordinates.Y, accelCoordinates.Z);
                 }
             }
         }
 
-        private IMUVector3D ReadSensorBytes(IntPtr data)
+        public void TryMadgwick()//shitshow
         {
-            IMUVector3D coords = new IMUVector3D();
+            MadgwickFilter madgwic = new MadgwickFilter();
+            while (true)
+            {
+                using (var frameset = this._pipe.WaitForFrames())
+                {
+                    var gyroFrame = frameset.FirstOrDefault<Frame>(Intel.RealSense.Stream.Gyro, Format.MotionXyz32f).DisposeWith(frameset);
+                    Vector3 gyroCoordinates = ReadSensorBytes(gyroFrame.Data);
+                    this._gyro = new Vector3(gyroCoordinates.X, gyroCoordinates.Y, gyroCoordinates.Z);
+
+                    var accelFrame = frameset.FirstOrDefault<Frame>(Intel.RealSense.Stream.Accel, Format.MotionXyz32f).DisposeWith(frameset);
+                    Vector3 accelCoordinates = ReadSensorBytes(accelFrame.Data);
+                    this._acc = new Vector3(accelCoordinates.X, accelCoordinates.Y, accelCoordinates.Z);
+
+                    Quaternion q = madgwic.IMU_Filter(_acc.X, _acc.Y, _acc.Z, _gyro.X, _gyro.Y, _gyro.Z);
+                    Vector3 eulerAngles = madgwic.EulerAngles(q);
+                    Console.WriteLine($"X: {eulerAngles.X} Y: {eulerAngles.Y} Z: {eulerAngles.Z}");
+                }
+            }
+        }
+
+        private Vector3 ReadSensorBytes(IntPtr data)
+        {
+            Vector3 coords = new Vector3();
             unsafe
             {
                 float* floatPtr = (float*)data; 
@@ -286,7 +313,7 @@ namespace L515_Realsense_App
                 coords.Y= *(floatPtr +1);
                 coords.Z = *(floatPtr +2);
             }
-            return new IMUVector3D(coords);
+            return coords;
         }
         //huh raz trzeba odwrócić raz nie, do zbadania
         private ushort ReverseBytes(ushort numberToReverse)

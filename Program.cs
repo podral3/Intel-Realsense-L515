@@ -11,7 +11,7 @@ namespace L515_Realsense_App
             device.OpenConnection(streamType.depth);
             //device.StreamVideoFrames();
             //device.GetDepthFrame();
-            device.ReadIMUFrame();
+            device.TryMadgwick();
             return 0;
         }
     }
