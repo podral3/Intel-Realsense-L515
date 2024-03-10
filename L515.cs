@@ -280,7 +280,7 @@ namespace L515_Realsense_App
             }
         }
 
-        public void TryMadgwick()//shitshow
+        public void TryMadgwick()
         {
             MadgwickFilter madgwic = new MadgwickFilter();
             while (true)
@@ -301,7 +301,16 @@ namespace L515_Realsense_App
                 }
             }
         }
-
+        public void TestMadgwick()
+        {
+            MadgwickFilter filter = new MadgwickFilter();
+            for (int i = 0; i < 1000; i++)
+            {
+                Quaternion q = filter.IMU_Filter(0.05f, 0.05f, 0.9f, 0, 0, 0);
+                Vector3 euler = filter.EulerAngles(q);
+                Console.WriteLine($"X: {euler.X} Y: {euler.Y} Z: {euler.Z}");
+            }
+        }
         private Vector3 ReadSensorBytes(IntPtr data)
         {
             Vector3 coords = new Vector3();

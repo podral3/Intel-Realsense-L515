@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace L515_Realsense_App
 {
-    internal class MadgwickFilter
+    class MadgwickFilter
     {
         private float DELTA = 0.01f;
         private const float GYRO_MEAN_ERROR = (float)Math.PI * (5.0f / 180.0f);
@@ -41,8 +41,8 @@ namespace L515_Realsense_App
 
             Quaternion q_gyro= new Quaternion(gx, gy, gz, 0); //q_w
 
-            q_gyro *= 0.5f; // equation (12) dq/dt = (1/2)q*w
-            q_gyro *= q_est_prev; // equation (12)
+            q_gyro = q_gyro * 0.5f; // equation (12) dq/dt = (1/2)q*w
+            q_gyro = q_est_prev * q_gyro; // equation (12)
 
             q_accel = Quaternion.Normalize(q_accel);
 
@@ -59,7 +59,7 @@ namespace L515_Realsense_App
 
             J_g[1, 0] = 2 * q_est_prev.X;
             J_g[1, 1] = 2 * q_est_prev.W;
-            J_g[1, 2] = 2 * q_est_prev.Y;
+            J_g[1, 2] = 2 * q_est_prev.Z;
             J_g[1, 3] = 2 * q_est_prev.Y;
 
             J_g[2, 0] = 0;
@@ -75,9 +75,9 @@ namespace L515_Realsense_App
 
             gradient = Quaternion.Normalize(gradient);
 
-            gradient *= BETA;
+            gradient = gradient * BETA;
             q_est_dot = q_gyro - gradient;
-            q_est_dot *= DELTA;
+            q_est_dot = q_est_dot * DELTA;
             q_est = q_est_prev + q_est_dot;
             q_est = Quaternion.Normalize(q_est); //q_est should be returned
             return q_est;
