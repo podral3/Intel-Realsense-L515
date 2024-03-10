@@ -297,7 +297,7 @@ namespace L515_Realsense_App
 
                     Quaternion q = madgwic.IMU_Filter(_acc.X, _acc.Y, _acc.Z, _gyro.X, _gyro.Y, _gyro.Z);
                     Vector3 eulerAngles = madgwic.EulerAngles(q);
-                    Console.WriteLine($"X: {eulerAngles.X} Y: {eulerAngles.Y} Z: {eulerAngles.Z}");
+                    Console.WriteLine($"Yaw: {eulerAngles.X} Pitch: {eulerAngles.Y} Roll: {eulerAngles.Z}");
                 }
             }
         }
